@@ -58,11 +58,13 @@ public class TileController : MonoBehaviour
             {
                 GetComponent<SpriteRenderer>().sprite = qustion;
                 isQuestion = !isQuestion;
+                Handheld.Vibrate();
             }
             else
             {
                 GetComponent<SpriteRenderer>().sprite = defaultSprite;
                 isQuestion = !isQuestion;
+                Handheld.Vibrate();
             }
         }
         

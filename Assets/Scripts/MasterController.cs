@@ -61,7 +61,7 @@ public class MasterController : MonoBehaviour
                 {
                     Debug.Log(hit.collider.name);
                     hit.collider.gameObject.SendMessage("MakeQuestion");
-                    Handheld.Vibrate();
+                    
                     tapDone = true;
                 }
             }
