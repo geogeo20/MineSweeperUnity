@@ -21,9 +21,10 @@ public class MasterController : MonoBehaviour
 
     public static bool isGameOver = true;
 
-    private float holdTime = 0.8f;
+    private float holdTime = 0.5f;
     private float acumTime = 0;
 
+    private bool tapDone = false;
 
     // Start is called before the first frame update
     void Start()
@@ -50,7 +51,7 @@ public class MasterController : MonoBehaviour
             Vector3 pos = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position);
             RaycastHit2D hit = Physics2D.Raycast(pos, Vector2.zero);
 
-            bool tapDone = false;
+            
 
             acumTime += Input.GetTouch(0).deltaTime;
 
@@ -60,9 +61,8 @@ public class MasterController : MonoBehaviour
                 {
                     Debug.Log(hit.collider.name);
                     hit.collider.gameObject.SendMessage("MakeQuestion");
-                    tapDone = !tapDone;
-                    acumTime = 0;
                     Handheld.Vibrate();
+                    tapDone = true;
                 }
             }
             if (Input.GetTouch(0).phase == TouchPhase.Ended && acumTime < holdTime && !tapDone)
@@ -71,10 +71,18 @@ public class MasterController : MonoBehaviour
                 {
                     Debug.Log(hit.collider.name);
                     hit.collider.gameObject.SendMessage("TouchDown");
-                    acumTime = 0;
-                    tapDone = !tapDone;
+                    
+                    
                 }
             }
+
+            if (Input.GetTouch(0).phase == TouchPhase.Ended && acumTime > holdTime)
+            {
+                acumTime = 0;
+                tapDone = false;
+            }
+                
+
 
         }
 
