@@ -29,7 +29,7 @@ public class MasterController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
+        Debug.Log(Screen.width + " " + Screen.height);
 
         for(float i=0 ; i< 10; i++)
             for(float j=0; j<18; j++)
@@ -71,6 +71,7 @@ public class MasterController : MonoBehaviour
                 {
                     Debug.Log(hit.collider.name);
                     hit.collider.gameObject.SendMessage("TouchDown");
+                    acumTime = 0;
                     
                     
                 }

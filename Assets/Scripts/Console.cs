@@ -35,13 +35,23 @@ public class Console : MonoBehaviour
 	};
 
 	const int margin = 50;
+    
 
 	Rect windowRect = new Rect(margin, margin, Screen.width - (margin * 5), Screen.height - (margin * 10));
 	Rect titleBarRect = new Rect(0, 0, 10000, 20);
 	GUIContent clearLabel = new GUIContent("Clear", "Clear the contents of the console.");
 	GUIContent collapseLabel = new GUIContent("Collapse", "Hide repeated messages.");
 
-	void OnEnable()
+    private void Start()
+    {
+        int conWindth = Screen.width - (margin * 5);
+        int conHeight = Screen.height - (margin * 5);
+
+        Debug.LogWarning(Screen.width + " " + Screen.height);
+        Debug.LogWarning(conWindth + " " + conHeight);
+    }
+
+    void OnEnable()
 	{
 		Application.RegisterLogCallback(HandleLog);
 	}
