@@ -35,20 +35,26 @@ public class Console : MonoBehaviour
 	};
 
 	const int margin = 50;
-    
+    public static float conWidth = Screen.width - margin * 2;
+    public static float conHeight = Screen.height - margin * 4;
 
-	Rect windowRect = new Rect(margin, margin, Screen.width - (margin * 5), Screen.height - (margin * 10));
-	Rect titleBarRect = new Rect(0, 0, 10000, 20);
-	GUIContent clearLabel = new GUIContent("Clear", "Clear the contents of the console.");
-	GUIContent collapseLabel = new GUIContent("Collapse", "Hide repeated messages.");
+    Rect windowRect = new Rect(margin, margin * 2, conWidth, conHeight);
+    
+    Rect titleBarRect = new Rect(0, 0, 10000, 20);
+    GUIContent clearLabel = new GUIContent("Clear", "Clear the contents of the console.");
+    GUIContent collapseLabel = new GUIContent("Collapse", "Hide repeated messages.");
 
     private void Start()
     {
-        int conWindth = Screen.width - (margin * 5);
-        int conHeight = Screen.height - (margin * 5);
+        Debug.LogError(conWidth + " " + conHeight);
+        Debug.LogError(windowRect.width + " " + windowRect.height);
 
-        Debug.LogWarning(Screen.width + " " + Screen.height);
-        Debug.LogWarning(conWindth + " " + conHeight);
+        
+        
+
+
+       
+       
     }
 
     void OnEnable()
@@ -67,9 +73,14 @@ public class Console : MonoBehaviour
 		{
 			show = !show;
 		}
-	}
+    }
 
-	void OnGUI()
+    private void OnMouseDown()
+    {
+        show = !show;
+    }
+
+    void OnGUI()
 	{
 		if (!show)
 		{
@@ -143,8 +154,5 @@ public class Console : MonoBehaviour
 	}
 
 
-    private void OnMouseDown()
-    {
-        show = !show;
-    }
+    
 }
