@@ -137,7 +137,7 @@ public class TileController : MonoBehaviour
         }
     }
 
-    /*
+    
     private void OnMouseUp()
     {
         if (isMine)
@@ -163,7 +163,8 @@ public class TileController : MonoBehaviour
         }
         
     }
-    */
+    
+    
 
 
 
