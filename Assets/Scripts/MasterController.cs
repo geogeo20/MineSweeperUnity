@@ -87,23 +87,6 @@ public class MasterController : MonoBehaviour
         }
 
 
-        /* if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
-        {
-            Vector3 pos = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position);
-            RaycastHit2D hit = Physics2D.Raycast(pos, Vector2.zero);
-
-            if (hit.collider != null)
-            {
-                Debug.Log(hit.collider.name);
-                hit.collider.gameObject.SendMessage("TouchDown");
-            }
-        }*/
-            
-
-
-
-
-
         if (Input.GetKeyDown(KeyCode.Escape))
             Application.Quit();
 
