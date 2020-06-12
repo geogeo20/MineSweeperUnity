@@ -1,27 +1,19 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Rendering;
-using UnityEngine.Serialization;
-using UnityEngineInternal;
+﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class TileController : MonoBehaviour
 {
     public Sprite[] sprites;
-    public Sprite mine;
-    public Sprite qustion;
+    public Sprite bombSprite;
+    public Sprite markSprite;
     public Sprite defaultSprite;
 
-    public int setCount;
-    
+    private SpriteRenderer spriteComponent;
+
+    [HideInInspector]
     public bool isMine;
-
+    [HideInInspector]
     public bool isUncovered = false;
-    // Start is called before the first frame update
-
-
     private bool isQuestion = false;
 
     void Start()
@@ -30,46 +22,31 @@ public class TileController : MonoBehaviour
         var position = transform.position;
         int x = (int) position.x;
         int y = (int) position.y;
-      
-
         MasterController.tiles[x, y] = this;
 
-        
-
+        spriteComponent = GetComponent<SpriteRenderer>();
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnMouseOver()
     {
-
-        // TouchMovement();
-        if (Input.GetMouseButton(1))
-            MakeQuestion();
-            
-        
-    }
-
-    public void MakeQuestion()
-    {
-        if(!isUncovered)
+        if(!isUncovered && Input.GetMouseButtonDown(1))
         {
-            if (isQuestion == false)
-
-            {
-                GetComponent<SpriteRenderer>().sprite = qustion;
-                isQuestion = !isQuestion;
-                Handheld.Vibrate();
-            }
-            else
-            {
-                GetComponent<SpriteRenderer>().sprite = defaultSprite;
-                isQuestion = !isQuestion;
-                Handheld.Vibrate();
-            }
+            MarkTile();
         }
-        
-            
-       
+    }
+
+    public void MarkTile()
+    {
+        if (!isQuestion)
+        {
+            spriteComponent.sprite = markSprite;
+        }
+        else
+        {
+            spriteComponent.sprite = defaultSprite;
+        }
+
+        isQuestion = !isQuestion;
     }
 
     public void LoadTexture()
@@ -77,15 +54,14 @@ public class TileController : MonoBehaviour
         int x = (int) transform.position.x;
         int y = (int) transform.position.y;
         if(isMine)
-            GetComponent<SpriteRenderer>().sprite = mine;
+        {
+            spriteComponent.sprite = bombSprite;
+        }
         else
         {
-            GetComponent<SpriteRenderer>().sprite = sprites[MasterController.SetCount(x,y)];
+            spriteComponent.sprite = sprites[MasterController.SetCount(x,y)];
             isUncovered = true;
         }
-        
-
-        
     }
 
     public bool IsCovered()
@@ -93,14 +69,12 @@ public class TileController : MonoBehaviour
         return GetComponent<SpriteRenderer>().sprite.texture.name == "Default";
     }
 
-
     private void TouchMovement()
     {
         if (Input.touchCount <= 0 || Input.GetTouch(0).phase != TouchPhase.Began) return;
         if (isMine)
         {
             MasterController.UncoverMines();
-            MasterController.GameOver();
             print("You lose!");
         }
         else
@@ -120,7 +94,6 @@ public class TileController : MonoBehaviour
         {
 
             MasterController.UncoverMines();
-            MasterController.GameOver();
             print("You lose!");
         }
         else if( isQuestion == false)
@@ -142,39 +115,27 @@ public class TileController : MonoBehaviour
     
     private void OnMouseUp()
     {
-        if (isMine)
+        if(!isQuestion)
         {
-
-            MasterController.UncoverMines();
-            MasterController.GameOver();
-            print("You lose!");
-        }
-        else
-        {
-            int x = (int)transform.position.x;
-            int y = (int)transform.position.y;
-
-            if (MasterController.SetCount(x, y) == 0)
+            if (isMine)
             {
-                print("Bagami-as pla in mata de methoda infecta");
-                MasterController.UncoverBlanks(x, y);
+                MasterController.UncoverMines();
+                Debug.Log("You lose!");
             }
             else
-                LoadTexture();
-            print(MasterController.SetCount(x, y));
+            {
+                int x = (int)transform.position.x;
+                int y = (int)transform.position.y;
+
+                if (MasterController.SetCount(x, y) == 0)
+                {
+                    MasterController.UncoverBlanks(x, y);
+                }
+                else
+                {
+                    LoadTexture();
+                }
+            }
         }
-        
     }
-    
-    
-
-
-
-
-    private void OnMouseDown()
-    {
-        // if(MasterController.isGameOver)
-        
-    }
-    
 }

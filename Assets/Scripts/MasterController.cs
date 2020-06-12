@@ -1,10 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MasterController : MonoBehaviour
 {
+    private float timer = 0;
+    private bool gameStarted = false;
 
     public GameObject tile;
 
@@ -13,9 +14,6 @@ public class MasterController : MonoBehaviour
 
     private static int axes = 2;
     private static int directions = 10;
-
-    private int[,] _dir = new int[axes, directions];
-
 
     public static TileController[,] tiles = new TileController[w,h];
 
@@ -36,22 +34,29 @@ public class MasterController : MonoBehaviour
                     Instantiate(tile, new Vector3(i,j,0), Quaternion.identity);
     }
 
-    // Update is called once per frame
     void Update()
     {
+        if(!gameStarted && Input.GetMouseButtonDown(0))
+        {
+            gameStarted = true;
+        }
+
+        if(gameStarted)
+        {
+            timer += Time.deltaTime;
+        }
+        
+
         if (Input.GetKeyDown("r"))
             SceneManager.LoadScene("MineSweeper");
 
 
-
-        
+        // Android touch control
         if(Input.touchCount > 0)
         {
 
             Vector3 pos = Camera.main.ScreenToWorldPoint(Input.GetTouch(0).position);
             RaycastHit2D hit = Physics2D.Raycast(pos, Vector2.zero);
-
-            
 
             acumTime += Input.GetTouch(0).deltaTime;
 
@@ -82,9 +87,6 @@ public class MasterController : MonoBehaviour
                 acumTime = 0;
                 tapDone = false;
             }
-                
-
-
         }
 
 
@@ -95,32 +97,23 @@ public class MasterController : MonoBehaviour
 
     public static void UncoverMines()
     {
-
         foreach (TileController tile in tiles)
         {
-            int x = (int) tile.transform.position.x;
-            int y = (int) tile.transform.position.x;
-
-
-            if (tile.isMine)
-                tile.LoadTexture();
-            else
-                tile.LoadTexture();
+            tile.LoadTexture();
         }
     }
 
     public static void UncoverBlanks(int x, int y)
     {
-        
-        
         if (tiles[x, y].isUncovered || tiles[x,y].isMine )
+        {
             return;
+        }
 
         tiles[x,y].LoadTexture();
 
         if (SetCount(x, y) > 0)
             return;
-
 
         if( y < h-1) UncoverBlanks(x,y+1);
         if( y != 0) UncoverBlanks(x, y-1);
@@ -131,14 +124,6 @@ public class MasterController : MonoBehaviour
         if( x != 0 && y != 0 ) UncoverBlanks(x-1, y-1);
         if( x != 0 && y < h-1) UncoverBlanks(x-1,y+1);
     }
-    
-    
-    
-    public static void GameOver()
-    {
-        // isGameOver = false;
-    }
-    
 
     public static bool mineAt(int x, int y)
     {
@@ -156,10 +141,14 @@ public class MasterController : MonoBehaviour
         if( y != 0) if (mineAt(x, y - 1)) ++count;
         if( x != 0 && y != 0 ) if (mineAt(x - 1, y - 1)) ++count;
         if( x != 0)if (mineAt(x - 1, y)) ++count;
-        if( x != 0 && y < h-1) if (mineAt(x - 1, y + 1)) ++count;
-        
+        if (x != 0 && y < h - 1) if (mineAt(x - 1, y + 1)) ++count;
 
         return count;
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
     
 }

@@ -44,19 +44,6 @@ public class Console : MonoBehaviour
     GUIContent clearLabel = new GUIContent("Clear", "Clear the contents of the console.");
     GUIContent collapseLabel = new GUIContent("Collapse", "Hide repeated messages.");
 
-    private void Start()
-    {
-        Debug.LogError(conWidth + " " + conHeight);
-        Debug.LogError(windowRect.width + " " + windowRect.height);
-
-        
-        
-
-
-       
-       
-    }
-
     void OnEnable()
 	{
 		Application.RegisterLogCallback(HandleLog);
@@ -75,9 +62,9 @@ public class Console : MonoBehaviour
 		}
     }
 
-    private void OnMouseDown()
+	public void ActivateConsole()
     {
-        show = !show;
+		show = !show;
     }
 
     void OnGUI()
