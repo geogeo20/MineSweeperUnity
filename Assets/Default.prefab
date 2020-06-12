@@ -105,8 +105,8 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 80993d09e499b3c419eba48a12fbe2ad, type: 3}
   - {fileID: 21300000, guid: 995ece1649a0e2041ac472b964026f77, type: 3}
   - {fileID: 21300000, guid: 449d7be06cbd31f48afce8a423291849, type: 3}
-  mine: {fileID: 21300000, guid: 4c1e82fb40654ef4bad876340b1630e4, type: 3}
-  qustion: {fileID: 21300000, guid: 2453ada2a6990994189d5a60aa29b4e3, type: 3}
+  bombSprite: {fileID: 21300000, guid: 4c1e82fb40654ef4bad876340b1630e4, type: 3}
+  markSprite: {fileID: 21300000, guid: 2453ada2a6990994189d5a60aa29b4e3, type: 3}
   defaultSprite: {fileID: 21300000, guid: 05f038b393146d144b9f7368ada3b6c7, type: 3}
   setCount: 0
   isMine: 0
