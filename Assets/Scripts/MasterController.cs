@@ -1,37 +1,45 @@
 ﻿using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
 
-public class MasterController : MonoBehaviour
+public class MasterController : Singleton<MasterController>
 {
-    private float timer = 0;
+    [Range(0, 1)]
+    public float bombChance;
+    [SerializeField]
+    private int width = 10;
+    [SerializeField]
+    private int height = 18;
+    [SerializeField]
+    private GameObject tilePrefab;
+    [SerializeField]
+    private BombCount bombCountScript;
+
+    private int bombCount;
+    private float timer;
     private bool gameStarted = false;
-
-    public GameObject tile;
-
-    private static int w = 10;
-    private static int h = 18;
-
-    private static int axes = 2;
-    private static int directions = 10;
-
-    public static TileController[,] tiles = new TileController[w,h];
-
-    public static bool isGameOver = true;
-
+    private TileController[,] tiles;
     private float holdTime = 0.5f;
     private float acumTime = 0;
-
     private bool tapDone = false;
 
-    // Start is called before the first frame update
     void Start()
     {
-        Debug.Log(Screen.width + " " + Screen.height);
+        InitializeTiles();
+    }
 
-        for(float i=0 ; i< 10; i++)
-            for(float j=0; j<18; j++)
-                    Instantiate(tile, new Vector3(i,j,0), Quaternion.identity);
+    private void InitializeTiles()
+    {
+        tiles = new TileController[width, height];
+
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                tiles[i,j] = Instantiate(tilePrefab, new Vector3(i, j, 0), Quaternion.identity).GetComponent<TileController>();
+            }
+        }
     }
 
     void Update()
@@ -43,7 +51,7 @@ public class MasterController : MonoBehaviour
 
         if(gameStarted)
         {
-            timer += Time.deltaTime;
+            Timer += Time.deltaTime;
         }
         
 
@@ -95,17 +103,25 @@ public class MasterController : MonoBehaviour
 
     }
 
-    public static void UncoverMines()
+    private void UncoverMines()
     {
         foreach (TileController tile in tiles)
         {
             tile.LoadTexture();
         }
+        gameStarted = false;
     }
 
-    public static void UncoverBlanks(int x, int y)
+    public void GameOver()
     {
-        if (tiles[x, y].isUncovered || tiles[x,y].isMine )
+        gameStarted = false;
+        UncoverMines();
+        Debug.Log("Game over");
+    }
+
+    public void UncoverBlanks(int x, int y)
+    {
+        if (tiles[x, y].TileState == TileState.UNCOVERED || tiles[x,y].TileType == TileType.BOMB)
         {
             return;
         }
@@ -115,33 +131,40 @@ public class MasterController : MonoBehaviour
         if (SetCount(x, y) > 0)
             return;
 
-        if( y < h-1) UncoverBlanks(x,y+1);
+        if( y < height - 1) UncoverBlanks(x,y+1);
         if( y != 0) UncoverBlanks(x, y-1);
-        if( x < w-1) UncoverBlanks(x+1, y);
+        if( x < width - 1) UncoverBlanks(x+1, y);
         if( x != 0) UncoverBlanks(x-1, y);
-        if( x < w-1 && y < h-1) UncoverBlanks(x+1,y+1);
-        if( x < w-1 && y != 0) UncoverBlanks(x+1,y-1);
+        if( x < width - 1 && y < height - 1) UncoverBlanks(x+1,y+1);
+        if( x < width - 1 && y != 0) UncoverBlanks(x+1,y-1);
         if( x != 0 && y != 0 ) UncoverBlanks(x-1, y-1);
-        if( x != 0 && y < h-1) UncoverBlanks(x-1,y+1);
+        if( x != 0 && y < height - 1) UncoverBlanks(x-1,y+1);
     }
 
-    public static bool mineAt(int x, int y)
+    public bool CheckIfTileIsBomb(int x, int y)
     {
-        return tiles[x, y].isMine;
+        if(tiles[x,y].TileType == TileType.BOMB)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
     
-    public static int SetCount(int x, int y)
+    public int SetCount(int x, int y)
     {
         int count = 0;
         
-        if( y < h-1 ) if (mineAt(x, y + 1)) ++count; 
-        if( x < w-1 && y < h-1) if (mineAt(x + 1, y + 1)) ++count;
-        if( x < w-1) if (mineAt(x + 1, y)) ++count;
-        if( x < w-1 && y != 0)if (mineAt(x + 1, y - 1)) ++count;
-        if( y != 0) if (mineAt(x, y - 1)) ++count;
-        if( x != 0 && y != 0 ) if (mineAt(x - 1, y - 1)) ++count;
-        if( x != 0)if (mineAt(x - 1, y)) ++count;
-        if (x != 0 && y < h - 1) if (mineAt(x - 1, y + 1)) ++count;
+        if( y < height - 1 ) if (CheckIfTileIsBomb(x, y + 1)) ++count; 
+        if( x < width-1 && y < height - 1) if (CheckIfTileIsBomb(x + 1, y + 1)) ++count;
+        if( x < width-1) if (CheckIfTileIsBomb(x + 1, y)) ++count;
+        if( x < width - 1 && y != 0)if (CheckIfTileIsBomb(x + 1, y - 1)) ++count;
+        if( y != 0) if (CheckIfTileIsBomb(x, y - 1)) ++count;
+        if( x != 0 && y != 0 ) if (CheckIfTileIsBomb(x - 1, y - 1)) ++count;
+        if( x != 0)if (CheckIfTileIsBomb(x - 1, y)) ++count;
+        if (x != 0 && y < height - 1) if (CheckIfTileIsBomb(x - 1, y + 1)) ++count;
 
         return count;
     }
@@ -150,5 +173,31 @@ public class MasterController : MonoBehaviour
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
-    
+
+    #region Properties
+    public float Timer
+    {
+        get
+        {
+            return timer;
+        }
+        private set
+        {
+            timer = value;
+        }
+    }
+
+    public int BombCount
+    {
+        get
+        {
+            return bombCount;
+        }
+        set
+        {
+            bombCount = value;
+            bombCountScript.UpdateBombCount(BombCount);
+        }
+    }
+    #endregion
 }

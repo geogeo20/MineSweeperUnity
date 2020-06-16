@@ -1,35 +1,61 @@
 ﻿using UnityEngine;
 using Random = UnityEngine.Random;
 
+public enum TileState
+{
+    COVERED,
+    UNCOVERED,
+    MARKED
+};
+
+public enum TileType
+{
+    BOMB,
+    NORMAL
+};
+
 public class TileController : MonoBehaviour
 {
-    public Sprite[] sprites;
-    public Sprite bombSprite;
-    public Sprite markSprite;
-    public Sprite defaultSprite;
+    [SerializeField]
+    private Sprite[] sprites = null;
+    [SerializeField]
+    private Sprite bombSprite = null;
+    [SerializeField]
+    private Sprite markSprite = null;
+    [SerializeField]
+    private Sprite defaultSprite = null;
 
     private SpriteRenderer spriteComponent;
+    private MasterController masterController;
 
-    [HideInInspector]
-    public bool isMine;
-    [HideInInspector]
-    public bool isUncovered = false;
-    private bool isQuestion = false;
+    private TileState tileState = TileState.COVERED;
+    private TileType tileType;
+    private Vector2Int gridPosition;
 
     void Start()
     {
-        isMine = Random.value < 0.20;
-        var position = transform.position;
-        int x = (int) position.x;
-        int y = (int) position.y;
-        MasterController.tiles[x, y] = this;
-
+        masterController = MasterController.Instace;
         spriteComponent = GetComponent<SpriteRenderer>();
+        gridPosition = new Vector2Int((int)transform.position.x, (int)transform.position.y);
+        RandomizeTile();
+    }
+
+    private void RandomizeTile()
+    {
+        if(Random.value < masterController.bombChance)
+        {
+            TileType = TileType.BOMB;
+            masterController.BombCount++;
+        }
+        else
+        {
+            TileType = TileType.NORMAL;
+        }
     }
 
     private void OnMouseOver()
     {
-        if(!isUncovered && Input.GetMouseButtonDown(1))
+        if (TileState != TileState.UNCOVERED && Input.GetMouseButtonDown(1))
         {
             MarkTile();
         }
@@ -37,99 +63,89 @@ public class TileController : MonoBehaviour
 
     public void MarkTile()
     {
-        if (!isQuestion)
+        if (TileState == TileState.COVERED)
         {
             spriteComponent.sprite = markSprite;
+            tileState = TileState.MARKED;
+            masterController.BombCount--;
         }
-        else
+        else if(TileState == TileState.MARKED)
         {
             spriteComponent.sprite = defaultSprite;
+            tileState = TileState.COVERED;
+            masterController.BombCount++;
         }
-
-        isQuestion = !isQuestion;
     }
 
     public void LoadTexture()
     {
-        int x = (int) transform.position.x;
-        int y = (int) transform.position.y;
-        if(isMine)
+        if (TileType == TileType.BOMB)
         {
             spriteComponent.sprite = bombSprite;
         }
         else
         {
-            spriteComponent.sprite = sprites[MasterController.SetCount(x,y)];
-            isUncovered = true;
+            spriteComponent.sprite = sprites[masterController.SetCount(gridPosition.x, gridPosition.y)];
+            TileState = TileState.UNCOVERED;
         }
-    }
-
-    public bool IsCovered()
-    {
-        return GetComponent<SpriteRenderer>().sprite.texture.name == "Default";
     }
 
     private void TouchMovement()
     {
-        if (Input.touchCount <= 0 || Input.GetTouch(0).phase != TouchPhase.Began) return;
-        if (isMine)
+        if (Input.touchCount <= 0 || Input.GetTouch(0).phase != TouchPhase.Began)
         {
-            MasterController.UncoverMines();
-            print("You lose!");
+            return;
+        }
+
+        if (TileType == TileType.BOMB)
+        {
+            masterController.GameOver();
         }
         else
         {
-            int x = (int) transform.position.x;
-            int y = (int) transform.position.y;
+            int x = (int)transform.position.x;
+            int y = (int)transform.position.y;
             LoadTexture();
-            if (MasterController.SetCount(x, y) == 0)
-                MasterController.UncoverBlanks(x, y);
-            print(MasterController.SetCount(x, y));
+            if (masterController.SetCount(x, y) == 0)
+            {
+                masterController.UncoverBlanks(x, y);
+            }
         }
     }
 
     public void TouchDown()
     {
-        if (isMine && !isQuestion)
+        if (TileType == TileType.BOMB && TileState != TileState.MARKED)
         {
-
-            MasterController.UncoverMines();
-            print("You lose!");
+            masterController.GameOver();
         }
-        else if( isQuestion == false)
+        else if (TileState != TileState.MARKED)
         {
-            int x = (int)transform.position.x;
-            int y = (int)transform.position.y;
-
-            if (MasterController.SetCount(x, y) == 0)
+            if (masterController.SetCount(gridPosition.x, gridPosition.y) == 0)
             {
-                print("Bagami-as pla in mata de methoda infecta");
-                MasterController.UncoverBlanks(x, y);
+                masterController.UncoverBlanks(gridPosition.x, gridPosition.y);
             }
             else
+            {
                 LoadTexture();
-            print(MasterController.SetCount(x, y));
+            }
         }
     }
 
-    
+
     private void OnMouseUp()
     {
-        if(!isQuestion)
+        if (TileState != TileState.MARKED)
         {
-            if (isMine)
+            if (TileType == TileType.BOMB)
             {
-                MasterController.UncoverMines();
-                Debug.Log("You lose!");
+                masterController.GameOver();
             }
             else
             {
-                int x = (int)transform.position.x;
-                int y = (int)transform.position.y;
-
-                if (MasterController.SetCount(x, y) == 0)
+                if (masterController.SetCount(gridPosition.x, gridPosition.y) == 0)
                 {
-                    MasterController.UncoverBlanks(x, y);
+                    masterController.UncoverBlanks(gridPosition.x, gridPosition.y);
                 }
                 else
                 {
@@ -138,4 +154,31 @@ public class TileController : MonoBehaviour
             }
         }
     }
+
+    #region Properties
+    public TileState TileState
+    {
+        get
+        {
+            return tileState;
+        }
+        private set
+        {
+            tileState = value;
+        }
+    }
+
+    public TileType TileType
+    {
+        get
+        {
+            return tileType;
+        }
+        private set
+        {
+            tileType = value;
+        }
+    }
+    #endregion
+
 }
